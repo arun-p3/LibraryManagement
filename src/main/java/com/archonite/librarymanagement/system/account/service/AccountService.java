@@ -13,9 +13,11 @@ public sealed interface AccountService permits AccountServiceImpl {
 
     Page<AccountManagerResponse> findAllUsers(int page, int pageSize);
 
-    AccountManagerResponse findUserById(UUID id) throws UserUnAvailableException;
+    AccountManagerResponse findUserById(String id) throws UserUnAvailableException;
 
     AccountManagerResponse updateUser(AccountRequestDto accountRequestDto) throws UserUnAvailableException;
 
     String deleteUser(UUID id) throws UserUnAvailableException;
+
+    String findByUserName(String userName) throws UserUnAvailableException;
 }

@@ -37,8 +37,8 @@ public final class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public AccountManagerResponse findUserById(UUID id) throws UserUnAvailableException {
-        Optional<AccountModel> accountModel = accountRepository.findById(id);
+    public AccountManagerResponse findUserById(String id) throws UserUnAvailableException {
+        Optional<AccountModel> accountModel = accountRepository.findById(UUID.fromString(id));
         accountModel.get().getOrders()
                 .forEach(ac -> ac.setDue(ac.getReturnDate().equals(LocalDate.now())));
         if (accountModel.isEmpty()) {
@@ -80,5 +80,13 @@ public final class AccountServiceImpl implements AccountService {
 
         return "Account Has been deleted UserName:" + account.get().getUserName();
 
+    }
+
+    public String findByUserName(String userName) throws UserUnAvailableException {
+        Optional<AccountModel> account = accountRepository.findByUserName(userName);
+        if (account.isEmpty()) {
+            throw new UserUnAvailableException("Requested User not available!");
+        }
+        return account.get().getId().toString();
     }
 }

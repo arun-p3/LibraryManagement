@@ -6,8 +6,10 @@ import com.archonite.librarymanagement.system.account.exception.UserUnAvailableE
 import com.archonite.librarymanagement.system.account.service.AccountService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -29,16 +31,17 @@ public class AccountController {
         return ResponseEntity.ok(allUsers);
     }
 
-    @GetMapping("/findById/{id}")
-    public ResponseEntity<AccountManagerResponse> findByUserId(@PathVariable UUID id, @RequestHeader("Authorization") String token) throws UserUnAvailableException {
-        return ResponseEntity.ok(accountService.findUserById(id));
+    @GetMapping("/findById")
+    public ResponseEntity<AccountManagerResponse> findByUserId(@RequestHeader("Authorization") String token) throws UserUnAvailableException {
+        String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+        Optional<String> id = Optional.ofNullable(accountService.findByUserName(userName));
+        return ResponseEntity.ok(accountService.findUserById(id.get()));
     }
 
     @PutMapping("/admin/update")
     public ResponseEntity<AccountManagerResponse> updateUser(@RequestBody AccountRequestDto accountRequestDto,
                                                              @RequestHeader("Authorization") String token) throws UserUnAvailableException {
         return ResponseEntity.ok(accountService.updateUser(accountRequestDto));
-
     }
 
     @DeleteMapping("/admin/delete/{id}")
