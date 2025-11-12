@@ -1,6 +1,7 @@
 package com.archonite.librarymanagement.system.inventory.controlleradvice;
 
 import com.archonite.librarymanagement.system.inventory.exception.BookUnAvailabilityException;
+import com.archonite.librarymanagement.system.inventory.exception.OrderNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -17,7 +18,16 @@ public class InventoryExceptionHandler {
     public Map<String, String> handleBookUnAvailabilityException(BookUnAvailabilityException ex) {
         Map<String, String> map = new HashMap<>();
         map.put("message", ex.getMessage());
-        map.put("status", "Failed");
+        map.put("status", "400");
+        return map;
+    }
+
+    @ExceptionHandler(OrderNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Map<String, String> handleOrdenNotFoundException(OrderNotFoundException ex) {
+        Map<String, String> map = new HashMap<>();
+        map.put("message", ex.getMessage());
+        map.put("status", "404");
         return map;
     }
 }

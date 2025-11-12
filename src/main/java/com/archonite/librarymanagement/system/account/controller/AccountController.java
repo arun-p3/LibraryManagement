@@ -21,9 +21,9 @@ public class AccountController {
     }
 
 
-    @GetMapping("/admin/find/{page}/{pageSize}")
-    public ResponseEntity<Page<AccountManagerResponse>> findAll(@PathVariable int page,
-                                                                @PathVariable int pageSize,
+    @GetMapping("/admin/find")
+    public ResponseEntity<Page<AccountManagerResponse>> findAll(@RequestParam("page") int page,
+                                                                @RequestParam("pageSize") int pageSize,
                                                                 @RequestHeader("Authorization") String token) {
         Page<AccountManagerResponse> allUsers = accountService.findAllUsers(page, pageSize);
         return ResponseEntity.ok(allUsers);

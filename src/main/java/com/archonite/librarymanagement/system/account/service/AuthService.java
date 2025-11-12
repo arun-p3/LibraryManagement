@@ -1,7 +1,7 @@
 package com.archonite.librarymanagement.system.account.service;
 
 import com.archonite.librarymanagement.system.account.dto.LoginRequest;
-import com.archonite.librarymanagement.system.account.dto.SignUpRequestDto;
+import com.archonite.librarymanagement.system.account.exception.InvalidCredentialsException;
 import com.archonite.librarymanagement.system.account.util.JwtUtility;
 import io.jsonwebtoken.JwtException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,7 +22,7 @@ public class AuthService {
         this.jwtUtil=jwtUtil;
     }
 
-    public Optional<String> authenticate(LoginRequest loginRequestDto) {
+    public Optional<String> authenticate(LoginRequest loginRequestDto) throws InvalidCredentialsException {
         Optional<String> token = userService.findByUserName(loginRequestDto.userName())
                 .filter(u -> passwordEncoder.matches(loginRequestDto.password(), u.getPassword()))
                 .map(u -> jwtUtil.generateToken(u.getUserName(), String.valueOf(u.getRole())));
@@ -34,7 +34,7 @@ public class AuthService {
         try{
             jwtUtil.validateToken(token);
             return true;
-        } catch (JwtException ex) {
+        } catch (JwtException e) {
             return false;
         }
     }

@@ -2,6 +2,8 @@ package com.archonite.librarymanagement.system.account.service;
 
 import com.archonite.librarymanagement.system.account.dto.LoginRequest;
 import com.archonite.librarymanagement.system.account.dto.SignUpRequestDto;
+import com.archonite.librarymanagement.system.account.exception.DuplicateResourceException;
+import com.archonite.librarymanagement.system.account.exception.InvalidCredentialsException;
 import com.archonite.librarymanagement.system.account.model.AccountModel;
 import com.archonite.librarymanagement.system.account.repository.AccountRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,22 +28,25 @@ public class LoginServiceImpl implements LoginService {
     }
 
     @Override
-    public String registerAccount(SignUpRequestDto dto) throws Exception {
-//        String password = AESDycrypt.decrypt(dto.password());
-//        String encodedPassword = passwordEncoder.encode(dto.password());
-        AccountModel accountModel = AccountModel.builder()
-                .fullName(dto.fullName())
-                .userName(dto.userName())
-                .password(dto.password())
-                .role(dto.role())
-                .build();
+    public String registerAccount(SignUpRequestDto dto) throws DuplicateResourceException {
 
-        accountRepository.save(accountModel);
+        if (accountRepository.existsByUserName(dto.userName())) {
+            throw new DuplicateResourceException("Username '" + dto.userName() + "' already exists");
+        }
+            AccountModel accountModel = AccountModel.builder()
+                    .fullName(dto.fullName())
+                    .userName(dto.userName())
+                    .password(passwordEncoder.encode(dto.password()))
+                    .role(dto.role())
+                    .build();
+
+            accountRepository.save(accountModel);
+
         return "User Saved Successfully";
     }
 
     @Override
-    public String login(LoginRequest dto) throws Exception {
+    public String login(LoginRequest dto) throws InvalidCredentialsException {
         Optional<String> tokenOptional = authService.authenticate(dto);
         if (!tokenOptional.isPresent()) {
             return "";

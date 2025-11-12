@@ -27,7 +27,6 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
         this.userDetailsService = userDetailsService;
     }
 
-
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -53,11 +52,33 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
 
             } catch (JwtException ex) {
                 System.out.println("Invalid JWT: " + ex.getMessage());
+                writeErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Token has expired, Please sign-in again!");
+                return;
             }
         }
 
         filterChain.doFilter(request, response);
 
 
+    }
+
+    private void writeErrorResponse(HttpServletResponse response, int status, String message) throws IOException {
+        if (response.isCommitted()) {
+            return;
+        }
+        response.resetBuffer();
+        response.setStatus(status);
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+
+        String body = String.format(
+                "{\"error\":\"%s\",\"status\":%d,\"timestamp\":\"%s\"}",
+                message,
+                status,
+                java.time.LocalDateTime.now()
+        );
+
+        response.getWriter().write(body);
+        response.flushBuffer();
     }
 }

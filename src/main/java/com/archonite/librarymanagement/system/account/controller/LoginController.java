@@ -1,6 +1,8 @@
 package com.archonite.librarymanagement.system.account.controller;
 
 import com.archonite.librarymanagement.system.account.dto.LoginRequest;
+import com.archonite.librarymanagement.system.account.exception.DuplicateResourceException;
+import com.archonite.librarymanagement.system.account.exception.InvalidCredentialsException;
 import com.archonite.librarymanagement.system.account.service.LoginService;
 import com.archonite.librarymanagement.system.account.dto.SignUpRequestDto;
 import jakarta.validation.Valid;
@@ -28,7 +30,7 @@ public class LoginController {
     }
 
     @PostMapping("/auth/create")
-    public ResponseEntity<String> createAccount(@Valid @RequestBody SignUpRequestDto dto) throws Exception {
+    public ResponseEntity<String> createAccount(@Valid @RequestBody SignUpRequestDto dto) throws DuplicateResourceException {
         return ResponseEntity.ok(loginService.registerAccount(dto));
     }
 
@@ -37,7 +39,7 @@ public class LoginController {
     public ResponseEntity<String> login(@RequestBody LoginRequest dto) throws Exception {
         String token = loginService.login(dto);
         if (!StringUtils.hasText(token)) {
-            return ResponseEntity.badRequest().build();
+            throw new InvalidCredentialsException("Invalid Credentials");
         }
         return ResponseEntity.ok(token);
     }

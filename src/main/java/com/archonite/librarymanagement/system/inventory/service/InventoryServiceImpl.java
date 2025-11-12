@@ -1,5 +1,6 @@
 package com.archonite.librarymanagement.system.inventory.service;
 
+import com.archonite.librarymanagement.system.account.exception.UserUnAvailableException;
 import com.archonite.librarymanagement.system.account.model.AccountModel;
 import com.archonite.librarymanagement.system.account.repository.AccountRepository;
 import com.archonite.librarymanagement.system.catalog.dto.BookRequestDto;
@@ -8,6 +9,7 @@ import com.archonite.librarymanagement.system.catalog.repository.CatalogReposito
 import com.archonite.librarymanagement.system.commonutils.MapperUtils;
 import com.archonite.librarymanagement.system.inventory.dto.OrderResponse;
 import com.archonite.librarymanagement.system.inventory.exception.BookUnAvailabilityException;
+import com.archonite.librarymanagement.system.inventory.exception.OrderNotFoundException;
 import com.archonite.librarymanagement.system.inventory.model.OrderModel;
 import com.archonite.librarymanagement.system.inventory.repository.InventoryRepository;
 import jakarta.transaction.Transactional;
@@ -35,7 +37,7 @@ public class InventoryServiceImpl implements InventoryService {
 
     @Override
     @Transactional
-    public OrderResponse lend(String accountId, List<BookRequestDto> bookRequestDto) throws BookUnAvailabilityException {
+    public OrderResponse lend(String accountId, List<BookRequestDto> bookRequestDto) throws BookUnAvailabilityException, UserUnAvailableException {
         Boolean availability = isAvailable(bookRequestDto);
         if (availability) {
             Optional<AccountModel> user = accountRepository.findById(UUID.fromString(accountId));
@@ -64,11 +66,12 @@ public class InventoryServiceImpl implements InventoryService {
                 updateBookStockBeforeLend(bookRequestDto);
 
                 return MapperUtils.map(order, OrderResponse.class);
+            } else {
+                throw new UserUnAvailableException("User not found with ID: "+ accountId);
             }
         } else {
             throw new BookUnAvailabilityException("Stock Unavailable!");
         }
-        throw new RuntimeException("Can't Place an Order!");
     }
 
 
@@ -86,7 +89,7 @@ public class InventoryServiceImpl implements InventoryService {
     }
 
     @Override
-    public String returnBook(UUID accountId, UUID orderId) {
+    public String returnBook(UUID accountId, UUID orderId) throws UserUnAvailableException, OrderNotFoundException {
         Optional<AccountModel> accountModel = accountRepository.findById(accountId);
         if (accountModel.isPresent()) {
             try {
@@ -103,13 +106,15 @@ public class InventoryServiceImpl implements InventoryService {
                     inventoryRepository.delete(orderToDelete);
 
                     updateBookStock(orderModelList);
+                } else {
+                    throw new OrderNotFoundException("Order not found!");
                 }
-            } catch (RuntimeException e) {
+            } catch (RuntimeException | OrderNotFoundException e) {
                 throw e;
             }
 
         } else {
-            return "Requested User Account is Not Available";
+            throw new UserUnAvailableException("User not available with acc ID: "+ accountId.toString());
         }
 
         return "Books Returned Successfully!";

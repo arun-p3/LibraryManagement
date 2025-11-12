@@ -24,7 +24,7 @@ public class AccountModel {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
     private String fullName;
-    @Column(unique = true)
+    @Column(unique = true, nullable = false)
     private String userName;
     private String password;
     @Enumerated(EnumType.STRING)

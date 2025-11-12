@@ -19,8 +19,8 @@ public class CatalogController {
         this.catalogService = catalogService;
     }
 
-    @GetMapping("/search/{content}")
-    public ResponseEntity<List<BookResponseDto>> searchBooks(@PathVariable("content") String content,
+    @GetMapping("/search")
+    public ResponseEntity<List<BookResponseDto>> searchBooks(@RequestParam("content") String content,
                                                              @RequestHeader("Authorization") String jwtToken) {
 
         List<BookResponseDto> response = catalogService.search(content);
@@ -29,17 +29,17 @@ public class CatalogController {
     }
 
 
-    @GetMapping("/book/findAll/{page}/{size}")
+    @GetMapping("/book/findAll")
     public ResponseEntity<Page<BookResponseDto>> findAllBooks(@RequestHeader("Authorization") String jwtToken,
-                                                              @PathVariable("page") int page,
-                                                              @PathVariable("size") int size) {
+                                                              @RequestParam("page") int page,
+                                                              @RequestParam("size") int size) {
         Page<BookResponseDto> response = catalogService.findAll(page, size);
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/sort/{field}")
+    @GetMapping("/sort")
     public ResponseEntity<List<BookResponseDto>> sortByFields(@RequestHeader("Authorization") String jwtToken,
-                                                              @PathVariable String field) {
+                                                              @RequestParam("field") String field) {
         List<BookResponseDto> response = catalogService.sort(field);
         return ResponseEntity.ok(response);
     }
